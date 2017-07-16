@@ -32,5 +32,10 @@ object WordCount {
    Splits a string into lower-case words 
   */
   def tokenizeLc(line: String, separators : Array[Char] = defaultSeparator): List[String] =
-    line.split(separators).map(_.trim.toLowerCase).toList
+    line
+      .split(separators)
+      .map(_.trim.toLowerCase)
+      .filter(_ != "")
+      .toList
+
 }

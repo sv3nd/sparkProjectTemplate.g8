@@ -3,7 +3,7 @@ package $organization$.$name$
 import org.scalatest.{FlatSpec, Matchers}
 
 /**
-  * Basic example of ad-hoc unit test, providing some input to a function and checking post condition.
+  * Basic example of ad-hoc unit test, providing some specific input to a function and checking post condition.
   *
   * See matchers: http://www.scalatest.org/user_guide/using_matchers#checkingEqualityWithMatchers
   */
@@ -16,7 +16,11 @@ class WordCountTest extends FlatSpec with Matchers {
 
     tokens should have size 6
     tokens should equal { List("unit", "tests", "for", "fun", "and", "profit!") }
-
   }
+
+  "tokenizing an empty string" should "yield an empty list" in  {
+    WordCount.tokenizeLc("") should be (List.empty[String])
+  }
+
 
 }

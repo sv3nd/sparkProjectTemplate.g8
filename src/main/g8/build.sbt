@@ -1,8 +1,9 @@
 // give the user a nice default project!
 
-lazy val root = (project in file(".")).
-
-  settings(
+lazy val root = (project in file("."))
+  .configs(IntegrationTest)
+  .settings( Defaults.itSettings : _*)
+  .settings(
     inThisBuild(List(
       organization := "$organization$",
       scalaVersion := "2.11.8"
@@ -23,11 +24,11 @@ lazy val root = (project in file(".")).
 
     libraryDependencies ++= Seq(
       "org.apache.spark" %% "spark-streaming" % "$sparkVersion$" % "provided",
-      "org.apache.spark" %% "spark-sql" % "2.2.0" % "provided",
+      "org.apache.spark" %% "spark-sql"       % "$sparkVersion$" % "provided",
 
-      "org.scalatest" %% "scalatest" % "3.0.1" % "test",
-      "org.scalacheck" %% "scalacheck" % "1.13.4" % "test",
-      "com.holdenkarau" %% "spark-testing-base" % "$sparkVersion$_$sparkTestingbaseRelease$" % "test" 
+      "org.scalatest"   %% "scalatest"          % "3.0.1"   % "test,it",
+      "org.scalacheck"  %% "scalacheck"         % "1.13.4"  % "test,it", 
+      "com.holdenkarau" %% "spark-testing-base" % "$sparkVersion$_$sparkTestingbaseRelease$" % "test,it"
     ),
 
     // uses compile classpath for the run task, including "provided" jar (cf http://stackoverflow.com/a/21803413/3827)
