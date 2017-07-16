@@ -1,28 +1,22 @@
 package $organization$.$name$
 
+import org.scalatest.{FlatSpec, Matchers}
+
 /**
- * A simple test for everyone's favourite wordcount example.
- */
+  * Basic example of ad-hoc unit test, providing some input to a function and checking post condition.
+  *
+  * See matchers: http://www.scalatest.org/user_guide/using_matchers#checkingEqualityWithMatchers
+  */
+class WordCountTest extends FlatSpec with Matchers {
 
-import com.holdenkarau.spark.testing.SharedSparkContext
-import org.scalatest.FunSuite
 
-class WordCountTest extends FunSuite with SharedSparkContext {
-  test("word count with Stop Words Removed"){
-    val linesRDD = sc.parallelize(Seq(
-      "How happy was the panda? You ask.",
-      "Panda is the most happy panda in all the#!?ing land!"))
+  "a basic string " should "be tokenized into 6 words " in  {
 
-    val stopWords: Set[String] = Set("a", "the", "in", "was", "there", "she", "he")
-    val splitTokens: Array[Char] = "#%?!. ".toCharArray
+    val tokens = WordCount.tokenizeLc("unit tests for fun and profit!")
 
-    val wordCounts = WordCount.withStopWordsFiltered(
-      linesRDD, splitTokens, stopWords)
-    val wordCountsAsMap = wordCounts.collectAsMap()
-    assert(!wordCountsAsMap.contains("the"))
-    assert(!wordCountsAsMap.contains("?"))
-    assert(!wordCountsAsMap.contains("#!?ing"))
-    assert(wordCountsAsMap.contains("ing"))
-    assert(wordCountsAsMap.get("panda").get.equals(3))
+    tokens should have size 6
+    tokens should equal { List("unit", "tests", "for", "fun", "and", "profit!") }
+
   }
+
 }
