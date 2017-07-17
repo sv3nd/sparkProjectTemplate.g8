@@ -3,6 +3,8 @@ A [Giter8][g8] template for Scala Spark Projects.
 
 ## What this gives you
 
+This is a fork of [Holden Karau's Spark Project Template](https://github.com/holdenk/sparkProjectTemplate.g8), with my own choice of different plugins and UT style. Check out her repo for the latest version of the real thing. 
+
 This template will bootstrap a new spark project with everyone's "favourite" wordcount example (modified for stop words). You can then replace the wordcount example as desired, and customize the Spark components your project needs.
 
 
@@ -13,13 +15,13 @@ To encourage good software development practice, this starts with a project at 1
 Have g8 installed? You can run it with:
 
 ```bash
-g8 holdenk/sparkProjectTemplate --name=projectname --organization=com.my.org --sparkVersion=2.2.0
+g8 sv3nd/sparkProjectTemplate --name=projectname --organization=com.my.org --sparkVersion=2.2.0
 ```
 
 Using sbt (0.13.13+)? just do
 
 ```bash
-sbt new holdenk/sparkProjectTemplate.g8
+sbt new sv3nd/sparkProjectTemplate.g8
 ```
 
 See also the README.md on the generated project for more instructions on how to build and use it. 
