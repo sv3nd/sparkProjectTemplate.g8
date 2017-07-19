@@ -1,4 +1,4 @@
-# sparkProjectTemplate
+# Spark Project Template
 A [Giter8][g8] template for Scala Spark Projects.
 
 ## What this gives you
@@ -9,6 +9,8 @@ This template will bootstrap a new spark project with everyone's "favourite" wor
 
 
 To encourage good software development practice, this starts with a project at 100% code coverage (e.g. one test :p), while its expected for this to decrease, we hope you use the provided [spark-testing-base][stb] library or similar option.
+
+A basic release process with auto-incrementing version is in place in the build script, based on sbt-git and sbt-release and heavily inspired [from those very useful sbt release tips from Jean Helou](http://blog.byjean.eu/2015/07/10/painless-release-with-sbt.html).
 
 ## Creating a new project from this template
 
@@ -28,7 +30,7 @@ And specify values when prompted for the template variables.
 
 The version of the project is handled by the [sbt-git](https://github.com/sbt/sbt-git) plugin, so it's expecting you to `git init` the project as soon as it's created.
 
-See also the README.md on the generated project for more instructions on how to build and use it. 
+See also the [README.md](src/main/g8/README.md) on the generated project for more instructions on how to build and release it. 
 
 ## Related
 

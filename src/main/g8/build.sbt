@@ -1,5 +1,8 @@
 // give the user a nice default project!
 
+import sbtrelease._
+import ReleaseTransformations._
+
 lazy val root = (project in file("."))
 
   .enablePlugins(GitVersioning)
@@ -10,14 +13,11 @@ lazy val root = (project in file("."))
   .settings(
     
     name := "$name$",
-
+    
     inThisBuild(List(
       organization := "$organization$",
       scalaVersion := "2.11.8"
     )),
-
-    sparkVersion := "$sparkVersion$",
-    sparkComponents := Seq(),
 
     javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
     javaOptions ++= Seq("-Xms512M", "-Xmx2048M", "-XX:MaxPermSize=2048M", "-XX:+CMSClassUnloadingEnabled"),
@@ -46,11 +46,38 @@ lazy val root = (project in file("."))
 
       // replaces the '-' of git-describe with a '+', to better convey the idea that we have supplementary commits since that tag
       git.gitTagToVersionNumber := {
-        case VersionRegex(v,"") => Some(v)
-        case VersionRegex(v,s) => Some(s"\$v+\$s")
-        case _ => None
+
+        case VersionRegex(ver,"") => Some(ver)
+        case VersionRegex(ver, supp) => Some(s"\$ver-\$supp")
+        case VersionRegex(ver, supp, sha) => Some(s"\$ver-\$supp")
+        case unknown => None
       }
+
     )),
+
+
+    // configuration of the release process
+    releaseProcess := Seq[ReleaseStep](
+      inquireOneVersion,
+      runClean,
+      runTest, 
+      setReleaseVersionNoWrite,
+      runAssembly, 
+      tagRelease
+      // TODO: put back publication here
+    ),
+
+    // based on the convention from sbt-git: the next release version is the tag version + 1
+    releaseVersion := { ver =>
+      if (ver.contains("SNAPSHOT"))
+        sys.error(s"Version \$ver cannot be released: SNAPSHOT")
+
+      Version(ver)
+        .map(_.withoutQualifier)
+        .map(_.bump.string)
+        .getOrElse(sys.error(s"Version \$ver is not compatible with \$VersionRegex pattern")) 
+    },    
+
 
     resolvers ++= Seq(
       "sonatype-releases" at "https://oss.sonatype.org/content/repositories/releases/",
@@ -71,4 +98,59 @@ lazy val root = (project in file("."))
     }
   )
 
-lazy val VersionRegex = "v([0-9]+.[0-9]+.[0-9]+)-?(.*)?".r
+lazy val VersionRegex = "v?([0-9]+.[0-9]+.[0-9]+)-?(.*)?".r
+
+// hacked re-implementations of some components of sbt-release
+// copy-pasted from https://github.com/sbt/sbt-release/blob/master/src/main/scala/ReleaseExtra.scala
+
+
+// this version of inquireVersions prompts for just one and not 2 version number: we know the previous version number
+// from the tag put by sbt-git and we prompt the user for the next version. The default should be ok in most cases, 
+// except if we want to bump a minor or major version. 
+lazy val inquireOneVersion: ReleaseStep = { st: State =>
+
+  val extracted = Project.extract(st)
+
+  val useDefs = st.get(ReleaseKeys.useDefaults).getOrElse(false)
+  val currentV = extracted.get(version)
+
+  val releaseFunc = extracted.runTask(releaseVersion, st)._2
+  val suggestedReleaseV = releaseFunc(currentV)
+
+  //flatten the Option[Option[String]] as the get returns an Option, and the value inside is an Option
+  val releaseV = readVersion(suggestedReleaseV, "Release version [%s] : ", useDefs, st.get(ReleaseKeys.commandLineReleaseVersion).flatten)
+
+  val nextFunc = extracted.runTask(releaseNextVersion, st)._2
+  val suggestedNextV = nextFunc(releaseV)
+
+  st.put(ReleaseKeys.versions, (releaseV, releaseV))
+
+}
+
+// This assigns the new value of the project version, without writting it to a version.sbt since we use tags to handle the version
+def setVersionNoWrite(selectVersion: Versions => String): ReleaseStep =  { st: State =>
+  val vs = st.get(ReleaseKeys.versions).getOrElse(sys.error("No versions are set! Was this release part executed before inquireVersions?"))
+  val selected = selectVersion(vs)
+
+  st.log.info("Setting version to '%s'." format selected)
+  val useGlobal = Project.extract(st).get(releaseUseGlobalVersion)
+  val versionStr = (if (useGlobal) globalVersionString else versionString) format selected
+
+  reapply(Seq(
+    if (useGlobal) version in ThisBuild := selected
+    else version := selected
+  ), st)
+}
+
+// our own version of the setReleaseVersion, without creating a version.sbt
+lazy val setReleaseVersionNoWrite: ReleaseStep = setVersionNoWrite(_._1)
+
+
+lazy val runAssembly: ReleaseStep = ReleaseStep(
+  action = { st: State =>
+    val extracted = Project.extract(st)
+    val ref = extracted.get(thisProjectRef)
+    extracted.runAggregated(assembly in Global in ref, st)
+  },
+  enableCrossBuild = true
+)
