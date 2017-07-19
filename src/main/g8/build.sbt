@@ -1,15 +1,20 @@
 // give the user a nice default project!
 
 lazy val root = (project in file("."))
+
+  .enablePlugins(GitVersioning)
+
   .configs(IntegrationTest)
   .settings( Defaults.itSettings : _*)
+
   .settings(
+    
+    name := "$name$",
+
     inThisBuild(List(
       organization := "$organization$",
       scalaVersion := "2.11.8"
     )),
-    name := "$name$",
-    version := "$version$",
 
     sparkVersion := "$sparkVersion$",
     sparkComponents := Seq(),
@@ -34,7 +39,20 @@ lazy val root = (project in file("."))
     // uses compile classpath for the run task, including "provided" jar (cf http://stackoverflow.com/a/21803413/3827)
     run in Compile := Defaults.runTask(fullClasspath in Compile, mainClass in (Compile, run), runner in (Compile, run)).evaluated,
 
-   resolvers ++= Seq(
+    // uses sbt-git to generate project version dynamically based on number of commits since last version tag
+    inThisBuild(List(      
+      git.useGitDescribe in ThisBuild := true,
+      git.baseVersion in ThisBuild := "0.0.0",
+
+      // replaces the '-' of git-describe with a '+', to better convey the idea that we have supplementary commits since that tag
+      git.gitTagToVersionNumber := {
+        case VersionRegex(v,"") => Some(v)
+        case VersionRegex(v,s) => Some(s"\$v+\$s")
+        case _ => None
+      }
+    )),
+
+    resolvers ++= Seq(
       "sonatype-releases" at "https://oss.sonatype.org/content/repositories/releases/",
       "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
       "Second Typesafe repo" at "http://repo.typesafe.com/typesafe/maven-releases/",
@@ -52,3 +70,5 @@ lazy val root = (project in file("."))
         Some("releases"  at nexus + "service/local/staging/deploy/maven2")
     }
   )
+
+lazy val VersionRegex = "v([0-9]+.[0-9]+.[0-9]+)-?(.*)?".r

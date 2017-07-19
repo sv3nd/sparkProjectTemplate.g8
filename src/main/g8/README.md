@@ -1,9 +1,7 @@
 $projectHumanName$
 --
 
-
 ## Local execution
-
 
 You can test locally the example spark job included in this template directly from sbt: 
 

@@ -11,3 +11,5 @@ addSbtPlugin("com.jsuereth" % "sbt-pgp" % "1.0.0")
 addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.5.0")
 
 addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.14.5")
+
+addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "0.9.3")

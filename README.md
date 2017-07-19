@@ -24,6 +24,10 @@ Using sbt (0.13.13+)? just do
 sbt new sv3nd/sparkProjectTemplate.g8
 ```
 
+And specify values when prompted for the template variables.
+
+The version of the project is handled by the [sbt-git](https://github.com/sbt/sbt-git) plugin, so it's expecting you to `git init` the project as soon as it's created.
+
 See also the README.md on the generated project for more instructions on how to build and use it. 
 
 ## Related
