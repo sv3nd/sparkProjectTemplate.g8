@@ -44,7 +44,6 @@ lazy val root = (project in file("."))
       git.useGitDescribe in ThisBuild := true,
       git.baseVersion in ThisBuild := "0.0.0",
 
-      // replaces the '-' of git-describe with a '+', to better convey the idea that we have supplementary commits since that tag
       git.gitTagToVersionNumber := {
 
         case VersionRegex(ver,"") => Some(ver)
